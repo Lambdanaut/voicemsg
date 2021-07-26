@@ -13,8 +13,6 @@ import wave
 
 sys.path.append('.')
 
-import tree.backend.constants as constants
-
 
 p = pyaudio.PyAudio()
 
@@ -45,32 +43,31 @@ class VoiceMsg(Audio):
 
     def __init__(
             self,
+            filepath: str,
             max_duration: int = 12,
             silence_threshold: int = 90,  # Anything below this volume is considered silent
             silence_duration: float = 1.0,  # Number of seconds to look back on to count silence duration
-            filepath: str = None,
             debug: bool = False):
 
         """
         Usage:
-            vm = VoiceMsg()
-            vm.calibrate()  # Calibrates the silence threshold
+            vm = VoiceMsg(".")
+            vm.calibrate(show_demo_text=True)  # Calibrates the silence threshold
             vm.record("test.wav")  # Records a segment of audio until silence is heard
             vm.play("test.wav")
 
 
+        :param filepath: filepath to save the final recording to
         :param max_duration: Maximum length of a complete recording. Will cut early if silence is detected
         :param silence_threshold: The upper bound for how quiet is silent in dFBS
         -32 is a pretty good default for recording speech.
         :param silence_duration: How long to record over and over, detecting silences
-        :param filepath: optional filepath to save the final recording to
-                         (defaults to constants.audio_recordings_filepath)
         """
 
         self.max_duration = max_duration
         self.silence_threshold = silence_threshold
         self.silence_duration = silence_duration
-        self.filepath = filepath or constants.audio_recordings_filepath
+        self.filepath = filepath
         self.debug = debug
 
     def _filepath_from_filename(self, filename: str) -> str:
@@ -87,7 +84,7 @@ class VoiceMsg(Audio):
         vol = max(chunk)
         print('█' * int(vol / 100))
 
-    def calibrate(self, show_demo_text: bool = True, play_demo_audio: bool = False):
+    def calibrate(self, show_demo_text: bool = True):
         """
         Sets the silence_threshold after a calibration period of detected silence.
         """
@@ -96,11 +93,7 @@ class VoiceMsg(Audio):
             print("Calibration process started")
             print("===========================")
 
-        if play_demo_audio:
-            calibration1_filepath = os.path.join(constants.static_filepath, 'calibration1.wav')
-            playsound.playsound(calibration1_filepath)
-        else:
-            time.sleep(0.2)  # Shortest sleep while the microphone warms up.. or something. Trust me it's important
+        time.sleep(0.2)  # Shortest sleep while the microphone warms up.. or something. Trust me it's important
 
         if show_demo_text:
             print(" - Remain silent for 4 seconds")
@@ -127,10 +120,6 @@ class VoiceMsg(Audio):
         if show_demo_text:
             print("Calibration process complete!")
             print("Calibrated silence threshold set to `{}`".format(self.silence_threshold))
-
-        if play_demo_audio:
-            calibration2_filepath = os.path.join(constants.static_filepath, 'calibration2.wav')
-            playsound.playsound(calibration2_filepath)
 
         return calibrated_value
 
@@ -242,7 +231,7 @@ class VoiceMsg(Audio):
 
 if __name__ == '__main__':
     # Run demo
-    vm = VoiceMsg()
-    vm.calibrate()  # Calibrates the silence threshold
+    vm = VoiceMsg(".", debug=True)
+    vm.calibrate(show_demo_text=True)  # Calibrates the silence threshold
     vm.record("test.wav")  # Records a segment of audio until silence is heard
     vm.play("test.wav")
