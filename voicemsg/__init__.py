@@ -1,11 +1,13 @@
 from array import array
 import abc
+from collections.abc import Callable
 import os
 from queue import Queue, Full
 import statistics
 import sys
 import time
 import threading
+from typing import Optional
 
 import pyaudio
 import playsound
@@ -127,11 +129,12 @@ class VoiceMsg(Audio):
         filepath = self._filepath_from_filename(filename)
         playsound.playsound(filepath)
 
-    def record(self, filename: str):
+    def record(self, filename: str, stream_callback: Optional[Callable] = None):
         """
         Records in chunks of self.silence_duration until another silence is reached
 
         :param filename: Filename to store the recording in at self.filepath
+        :param stream_callback: Optional function to call every time a frame is read. Frame is passed in as input.
         :raises NoAudioHeardException: Raised if no audio is heard at all for 20 times the silence_duration
         :return:
         """
@@ -203,7 +206,10 @@ class VoiceMsg(Audio):
                 if stopped.wait(timeout=0):
                     break
                 try:
-                    q.put(array('h', stream.read(self.chunk_size)))
+                    chunk = array('h', stream.read(self.chunk_size))
+                    if stream_callback is not None:
+                        stream_callback(chunk)
+                    q.put(chunk)
                 except Full:
                     pass  # discard
 
