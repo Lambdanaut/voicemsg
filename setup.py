@@ -25,7 +25,7 @@ setup(name='voicemsg',
       packages=['voicemsg'],
       install_requires = [
           'wave==0.0.2',
-          'PyAudio==0.2.11',
+          'PyAudio==0.2.12',
           'playsound==1.3.0'
       ],
       zip_safe=False)
