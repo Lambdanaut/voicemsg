@@ -231,6 +231,9 @@ class VoiceMsg(Audio):
         except KeyboardInterrupt:
             stopped_event.set()
 
+        except OSError:
+            stopped_event.set()
+
         listen_t.join()
         record_t.join()
 
