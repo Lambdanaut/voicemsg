@@ -232,6 +232,7 @@ class VoiceMsg(Audio):
             stopped_event.set()
 
         except OSError:
+            print("Warning: OSError encountered while listening to audio from voicemsg")
             stopped_event.set()
 
         listen_t.join()
